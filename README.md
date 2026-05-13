@@ -64,9 +64,15 @@ python -m ez_reset
 ### CI / 自动发布
 
 - 仓库已支持 GitHub Actions 自动打包 Windows EXE
-- `Build Windows EXE`：在 `master` 提交、Pull Request 或手动触发时运行，产出可下载的 exe artifact
-- `Release Windows EXE`：在推送 `v*` tag 时自动构建并发布 GitHub Release，同时上传 exe 资产
+- `Build Windows EXE`：在 Pull Request 或手动触发时运行，产出可下载的 exe artifact
+- `Continuous Release`：在 `master` 每次提交后自动构建并更新一个滚动 Release，适合你要的“commit 一下就有 release”
+- `Release Windows EXE`：在推送 `v*` tag 时自动构建并发布正式版 GitHub Release，同时上传 exe 资产
 - 也可以在 Actions 页面手动触发 `Release Windows EXE`，并填写要发布的 tag
+
+自动持续发布地址：
+
+- Release 页面：`https://github.com/yviscool/ez-reset/releases/tag/continuous`
+- 资产文件名：`ez-reset-continuous-windows-x64.exe`
 
 常用发布流程：
 
