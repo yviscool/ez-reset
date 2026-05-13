@@ -346,8 +346,8 @@ class PrinterWindow(tk.Toplevel):
         self._slow_task_id: str | None = None
 
         self.title(f"{candidate.label} | ez-reset")
-        self.geometry("860x620")
-        self.minsize(760, 520)
+        self.geometry("860x760")
+        self.minsize(760, 620)
         self.protocol("WM_DELETE_WINDOW", self.close_window)
 
         self.status_var = tk.StringVar(value="准备连接设备…")
@@ -372,7 +372,7 @@ class PrinterWindow(tk.Toplevel):
         container = ttk.Frame(self, padding=12)
         container.grid(row=0, column=0, sticky="nsew")
         container.columnconfigure(0, weight=1)
-        container.rowconfigure(4, weight=1)
+        container.rowconfigure(5, weight=1)
 
         header = ttk.Frame(container)
         header.grid(row=0, column=0, sticky="ew")
@@ -421,7 +421,7 @@ class PrinterWindow(tk.Toplevel):
             ).grid(row=row, column=1, sticky="ew", pady=3)
 
         self.ink_frame = ttk.LabelFrame(container, text="墨量", padding=10)
-        self.ink_frame.grid(row=4, column=0, sticky="new", pady=(12, 0))
+        self.ink_frame.grid(row=4, column=0, sticky="ew", pady=(12, 0))
         self.ink_frame.columnconfigure(0, weight=1)
         self.ink_frame.columnconfigure(1, weight=1)
 

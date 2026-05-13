@@ -6,12 +6,12 @@ Reset waste ink counters on Epson printers via USB on Windows.
 
 ## 中文说明
 
-`ez-reset` 是一个面向 Windows 的 Epson 废墨计数器工具，使用 USB 直接与打印机通信。
+`ez-reset` 是一个面向 Windows 的 Epson 废墨清零工具，通过 USB 直接与打印机通信，不依赖网络或 SNMP。
 
-- 支持查看墨量和废墨计数器状态
-- 支持重置废墨计数器
-- 适合无法通过网络/SNMP 方案处理的新型号 Epson 打印机
-- 现在的 GUI 已改为后台连接和后台读取状态，设备响应慢时窗口不会再直接“未响应”
+- 支持查看打印机状态、墨量和废墨计数器
+- 支持按机型定义写入废墨清零值
+- 适合很多网络方案不兼容的新型号 Epson 设备
+- GUI 已改为后台连接、后台刷新、后台清零，设备响应慢时窗口不会直接“未响应”
 
 ### 安装
 
@@ -34,9 +34,32 @@ python -m ez_reset
 ### 使用建议
 
 - 双击主窗口里的 USBPRINT 设备即可打开详情页
-- 如果连接或刷新耗时较长，界面会保持可操作状态
+- 如果连接或刷新耗时较长，界面仍可操作
 - 如果打印机或 USBPRINT 通道卡住，重新插拔 USB 后点击“重新连接”通常可以恢复
 - 若出现异常，程序会在当前目录写入 `ez-reset.log`
+
+### 技术原理
+
+1. 设备发现：程序通过 Windows SetupAPI 枚举 `GUID_DEVINTERFACE_USBPRINT`，找到当前系统里的 USB 打印设备路径。
+2. 设备识别：打开 USBPRINT 设备句柄后，先读取 IEEE 1284 Device ID，再解析其中的 `DES`、`MDL` 等字段，确定机型和显示名称。
+3. 控制通道：当前 GUI 默认走 Epson 的 D4 / IEEE 1284.4 控制通道。程序会先把设备切到 1284.4 模式，再打开 `EPSON-CTRL` 通道发送控制命令。
+4. 状态读取：普通状态通过 `st` 控制命令读取；废墨计数器则根据 `devices.xml` 里定义的机型地址，从 EEPROM/NVRAM 对应位置读取。
+5. 废墨清零：程序根据 `devices.xml` 里的机型定义，向特定 EEPROM 地址写入复位值，从而重置废墨计数器。
+6. 界面防卡死：连接设备、读取状态、执行清零都放在后台线程里执行，Tk 主线程只负责界面刷新和结果回显。
+
+### 兼容性与风险
+
+- 该工具只适用于 Windows，本地直连 USB 使用场景
+- 并不是所有枚举出来的 USBPRINT 设备都一定兼容 Epson D4 控制协议
+- 某些机型虽然能识别，但如果固件行为不同，仍可能出现读取失败、协议异常或需要重新插拔 USB
+- 废墨清零会直接写入设备内部计数值，使用前应确认机型匹配并自行承担操作风险
+
+### 排障
+
+- 无法启动：先确认使用的是更新后的安装包，必要时重新执行 `python -m pip install -e .`
+- 打开设备后长期无响应：重新插拔 USB，重启打印机，再点击“重新连接”
+- 提示机型不支持：说明 `devices.xml` 中没有这台打印机的定义，或当前返回的机型字段与已知定义不匹配
+- 需要进一步定位：查看当前目录下的 `ez-reset.log`
 
 **Want to help with development, learn more about Epson printers, or simply need help?** Join the Discord server for a new community I want to try starting called "NoSPE - No Stupid Printer Errors": https://discord.gg/fspDRHNrU3
 
