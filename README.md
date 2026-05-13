@@ -61,6 +61,22 @@ python -m ez_reset
 - 提示机型不支持：说明 `devices.xml` 中没有这台打印机的定义，或当前返回的机型字段与已知定义不匹配
 - 需要进一步定位：查看当前目录下的 `ez-reset.log`
 
+### CI / 自动发布
+
+- 仓库已支持 GitHub Actions 自动打包 Windows EXE
+- `Build Windows EXE`：在 `master` 提交、Pull Request 或手动触发时运行，产出可下载的 exe artifact
+- `Release Windows EXE`：在推送 `v*` tag 时自动构建并发布 GitHub Release，同时上传 exe 资产
+- 也可以在 Actions 页面手动触发 `Release Windows EXE`，并填写要发布的 tag
+
+常用发布流程：
+
+```powershell
+git tag v0.1.1
+git push origin v0.1.1
+```
+
+推送后，GitHub Actions 会自动生成对应 Release 并附带 Windows 可执行文件。
+
 **Want to help with development, learn more about Epson printers, or simply need help?** Join the Discord server for a new community I want to try starting called "NoSPE - No Stupid Printer Errors": https://discord.gg/fspDRHNrU3
 
 ## What it does
