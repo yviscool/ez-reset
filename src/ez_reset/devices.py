@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from importlib.resources import files
@@ -9,6 +11,10 @@ if TYPE_CHECKING:
 
 xml_content = files(__package__).joinpath("devices.xml").read_bytes()
 devices = ET.fromstring(xml_content)
+
+
+class UnsupportedPrinterError(LookupError):
+    pass
 
 
 @dataclass
@@ -29,6 +35,9 @@ class Device:
 
 def by_model(model: str) -> Device:
     printer_el: Element = devices.find(f".//printer[@model='{model}']")
+    if printer_el is None:
+        msg = f"devices.xml 中没有找到机型 {model!r} 的定义。"
+        raise UnsupportedPrinterError(msg)
 
     device = Device(
         model=b"",
@@ -37,16 +46,25 @@ def by_model(model: str) -> Device:
         reset={},
     )
 
-    for spec in printer_el.attrib.get("specs", "").split(","):
+    specs = [spec for spec in printer_el.attrib.get("specs", "").split(",") if spec]
+    if not specs:
+        msg = f"机型 {model!r} 没有可用的 specs 定义。"
+        raise UnsupportedPrinterError(msg)
+
+    for spec in specs:
         spec_el: Element = devices.find(f".//devices/{spec}")
+        if spec_el is None:
+            msg = f"机型 {model!r} 依赖的 spec {spec!r} 不存在。"
+            raise UnsupportedPrinterError(msg)
 
         service_el = spec_el.find(".//service")
         if service_el is not None:
             factory_el = service_el.find(".//factory")
-            device.model = bytes(int(byte, 0) for byte in factory_el.text.split())
+            if factory_el is not None and factory_el.text:
+                device.model = bytes(int(byte, 0) for byte in factory_el.text.split())
 
             keyword_el = service_el.find(".//keyword")
-            if keyword_el is not None:
+            if keyword_el is not None and keyword_el.text:
                 device.key = bytes(int(byte, 0) for byte in keyword_el.text.split())
 
         waste_el = spec_el.find(".//waste")
@@ -58,6 +76,8 @@ def by_model(model: str) -> Device:
 
                     entry_el = counter_el.find(".//entry")
                     raw_addresses = entry_el.text if entry_el is not None else counter_el.text
+                    if not raw_addresses:
+                        continue
 
                     counter.addresses = [int(raw, 0) for raw in raw_addresses.split()]
 
@@ -67,7 +87,7 @@ def by_model(model: str) -> Device:
                     device.counters.append(counter)
 
             reset_el = waste_el.find(".//reset")
-            if reset_el is not None:
+            if reset_el is not None and reset_el.text:
                 device.reset = {int(addr, 0): int(val, 0) for (addr, val) in batched(reset_el.text.split(), 2)}
 
     return device

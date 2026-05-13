@@ -4,6 +4,40 @@
 
 Reset waste ink counters on Epson printers via USB on Windows.
 
+## 中文说明
+
+`ez-reset` 是一个面向 Windows 的 Epson 废墨计数器工具，使用 USB 直接与打印机通信。
+
+- 支持查看墨量和废墨计数器状态
+- 支持重置废墨计数器
+- 适合无法通过网络/SNMP 方案处理的新型号 Epson 打印机
+- 现在的 GUI 已改为后台连接和后台读取状态，设备响应慢时窗口不会再直接“未响应”
+
+### 安装
+
+```powershell
+python -m pip install .
+```
+
+开发模式安装：
+
+```powershell
+python -m pip install -e .
+```
+
+### 启动
+
+```powershell
+python -m ez_reset
+```
+
+### 使用建议
+
+- 双击主窗口里的 USBPRINT 设备即可打开详情页
+- 如果连接或刷新耗时较长，界面会保持可操作状态
+- 如果打印机或 USBPRINT 通道卡住，重新插拔 USB 后点击“重新连接”通常可以恢复
+- 若出现异常，程序会在当前目录写入 `ez-reset.log`
+
 **Want to help with development, learn more about Epson printers, or simply need help?** Join the Discord server for a new community I want to try starting called "NoSPE - No Stupid Printer Errors": https://discord.gg/fspDRHNrU3
 
 ## What it does
